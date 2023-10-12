@@ -21,3 +21,7 @@ dependencies {
 	appTestImplementation(project(":aot-smoke-test-support"))
 	appTestImplementation("org.awaitility:awaitility:4.2.0")
 }
+
+tasks.named("startApp").configure {
+	jvmArgs.addAll(["--add-opens", "java.base/sun.net=ALL-UNNAMED"])
+}

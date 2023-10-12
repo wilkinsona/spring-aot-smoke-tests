@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2022-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.gradle.api.Task;
+import org.gradle.api.provider.ListProperty;
+import org.gradle.api.tasks.Input;
 import org.gradle.internal.jvm.Jvm;
 
 /**
@@ -29,6 +31,12 @@ import org.gradle.internal.jvm.Jvm;
  * @author Andy Wilkinson
  */
 public abstract class StartJvmApplication extends StartApplication {
+
+	/**
+	 * Additional arguments that should be passed to the JVM when the application in started.
+	 */
+	@Input
+	public abstract ListProperty<String> getJvmArgs();
 
 	@Override
 	protected ProcessBuilder prepareProcessBuilder(ProcessBuilder processBuilder) {
@@ -39,6 +47,7 @@ public abstract class StartJvmApplication extends StartApplication {
 		if (getWebApplication().get()) {
 			command.add("-Dserver.port=0");
 		}
+		command.addAll(getJvmArgs().get());
 		command.add("-jar");
 		command.add(getApplicationBinary().get().getAsFile().getAbsolutePath());
 		return processBuilder.command(command);
