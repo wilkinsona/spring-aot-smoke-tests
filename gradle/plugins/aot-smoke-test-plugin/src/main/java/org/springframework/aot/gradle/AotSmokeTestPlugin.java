@@ -114,6 +114,7 @@ public class AotSmokeTestPlugin implements Plugin<Project> {
 			task.getOutputDirectory().set(project.getLayout().getBuildDirectory().dir(task.getName()));
 			task.setAppTests(appTest.getAllSource());
 			task.setTests(javaExtension.getSourceSets().getByName(SourceSet.TEST_SOURCE_SET_NAME).getAllSource());
+			task.getSlackChannel().set(extension.getSlackChannel());
 		});
 		project.artifacts((artifacts) -> artifacts.add(smokeTests.getName(), describeSmokeTests));
 		DependencyHandler dependencies = project.getRootProject().getDependencies();

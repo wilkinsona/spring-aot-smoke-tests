@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2022-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,12 @@ public class AotSmokeTestExtension {
 
 	private final Property<Boolean> webApplication;
 
+	private final Property<String> slackChannel;
+
 	@Inject
 	public AotSmokeTestExtension(Project project) {
 		this.webApplication = project.getObjects().property(Boolean.class);
+		this.slackChannel = project.getObjects().property(String.class);
 	}
 
 	/**
@@ -41,6 +44,14 @@ public class AotSmokeTestExtension {
 	 */
 	public Property<Boolean> getWebApplication() {
 		return this.webApplication;
+	}
+
+	/**
+	 * Slack channel to which failure notifications should be published.
+	 * @return Slack channel to which failure notifications should be published.
+	 */
+	public Property<String> getSlackChannel() {
+		return this.slackChannel;
 	}
 
 }

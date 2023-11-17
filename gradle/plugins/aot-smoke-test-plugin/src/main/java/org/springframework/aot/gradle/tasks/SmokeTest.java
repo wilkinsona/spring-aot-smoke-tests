@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2022-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,14 @@ import java.util.Properties;
  * @param path path of the smoke test project
  * @param tests whether the smoke test contains any unit tests
  * @param appTests whether the smoke test contains any app tests
+ * @param slackChannel channel on Slack to which failure notifications should be sent
  */
-record SmokeTest(String name, String group, String path, boolean tests, boolean appTests) {
+record SmokeTest(String name, String group, String path, boolean tests, boolean appTests, String slackChannel) {
 
 	SmokeTest(Properties properties) {
 		this(properties.getProperty("name"), properties.getProperty("group"), properties.getProperty("path"),
-				Boolean.valueOf(properties.getProperty("tests")), Boolean.valueOf(properties.getProperty("appTests")));
+				Boolean.valueOf(properties.getProperty("tests")), Boolean.valueOf(properties.getProperty("appTests")),
+				properties.getProperty("slackChannel"));
 	}
 
 }

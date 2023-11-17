@@ -9,6 +9,7 @@
 #@ branch = "3.0.x"
 #@ milestone = "3.0.x"
 #@ task_timeout = "1h00m"
+#@ slack_alerts = False
 
 #@ load("@ytt:data", "data")
 
@@ -20,6 +21,9 @@
 #@     end
 #@     if smoke_test.test:
 #@       total_tests += 1
+#@     end
+#@     if smoke_test.slack_channel:
+#@       slack_alerts = True
 #@     end
 #@   end
 #@ end
@@ -39,6 +43,16 @@
 #@ end
 #@ test_index = 0
 
+#@ if slack_alerts:
+resource_types:
+- name: slack-notification
+  type: registry-image
+  source:
+    username: ((docker-hub-username))
+    password: ((docker-hub-password))
+    tag: latest
+    repository: cfcommunity/slack-notification-resource
+#@ end
 resources:
 - name: git-repo
   type: git
@@ -64,6 +78,13 @@ resources:
     password: ((docker-hub-password))
     tag: #@ milestone
     repository: #@ docker_hub["organization"] + "/" + github["repository"] + "-ci"
+#@ if slack_alerts:
+- name: slack-alert
+  type: slack-notification
+  icon: slack
+  source:
+    url: ((slack-webhook-url))
+#@ end
 #@ for group in data.values.groups:
 #@   for smoke_test in group.smoke_tests:
 #@     if smoke_test.app_test:
@@ -143,6 +164,17 @@ jobs:
         GRADLE_ENTERPRISE_ACCESS_KEY: ((gradle_enterprise_secret_access_key))
         GRADLE_ENTERPRISE_CACHE_USERNAME: ((gradle_enterprise_cache_user.username))
         GRADLE_ENTERPRISE_CACHE_PASSWORD: ((gradle_enterprise_cache_user.password))
+#@ if smoke_test.slack_channel:
+    on_failure:
+      do:
+      - put: slack-alert
+        params:
+          channel: #@ smoke_test.slack_channel
+          text: ":concourse-failed: <!here> <https://ci.spring.io/teams/${BUILD_TEAM_NAME}/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_NAME}|${BUILD_PIPELINE_NAME} ${BUILD_JOB_NAME} failed!>"
+          silent: true
+          icon_emoji: ":concourse:"
+          username: concourse-ci
+#@ end
 - name: #@ smoke_test.name + "-native-app-test"
   serial: true
   public: true
@@ -168,6 +200,17 @@ jobs:
         GRADLE_ENTERPRISE_ACCESS_KEY: ((gradle_enterprise_secret_access_key))
         GRADLE_ENTERPRISE_CACHE_USERNAME: ((gradle_enterprise_cache_user.username))
         GRADLE_ENTERPRISE_CACHE_PASSWORD: ((gradle_enterprise_cache_user.password))
+#@ if smoke_test.slack_channel:
+    on_failure:
+      do:
+      - put: slack-alert
+        params:
+          channel: #@ smoke_test.slack_channel
+          text: ":concourse-failed: <!here> <https://ci.spring.io/teams/${BUILD_TEAM_NAME}/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_NAME}|${BUILD_PIPELINE_NAME} ${BUILD_JOB_NAME} failed!>"
+          silent: true
+          icon_emoji: ":concourse:"
+          username: concourse-ci
+#@ end
 #@ end
 #@ if smoke_test.test:
 - name: #@ smoke_test.name + "-test"
@@ -194,6 +237,17 @@ jobs:
         GRADLE_ENTERPRISE_ACCESS_KEY: ((gradle_enterprise_secret_access_key))
         GRADLE_ENTERPRISE_CACHE_USERNAME: ((gradle_enterprise_cache_user.username))
         GRADLE_ENTERPRISE_CACHE_PASSWORD: ((gradle_enterprise_cache_user.password))
+#@ if smoke_test.slack_channel:
+    on_failure:
+      do:
+      - put: slack-alert
+        params:
+          channel: #@ smoke_test.slack_channel
+          text: ":concourse-failed: <!here> <https://ci.spring.io/teams/${BUILD_TEAM_NAME}/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_NAME}|${BUILD_PIPELINE_NAME} ${BUILD_JOB_NAME} failed!>"
+          silent: true
+          icon_emoji: ":concourse:"
+          username: concourse-ci
+#@ end
 - name: #@ smoke_test.name + "-native-test"
   serial: true
   public: true
@@ -218,6 +272,17 @@ jobs:
         GRADLE_ENTERPRISE_ACCESS_KEY: ((gradle_enterprise_secret_access_key))
         GRADLE_ENTERPRISE_CACHE_USERNAME: ((gradle_enterprise_cache_user.username))
         GRADLE_ENTERPRISE_CACHE_PASSWORD: ((gradle_enterprise_cache_user.password))
+#@ if smoke_test.slack_channel:
+    on_failure:
+      do:
+      - put: slack-alert
+        params:
+          channel: #@ smoke_test.slack_channel
+          text: ":concourse-failed: <!here> <https://ci.spring.io/teams/${BUILD_TEAM_NAME}/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_NAME}|${BUILD_PIPELINE_NAME} ${BUILD_JOB_NAME} failed!>"
+          silent: true
+          icon_emoji: ":concourse:"
+          username: concourse-ci
+#@ end
 #@ end
 #@ end
 #@ end

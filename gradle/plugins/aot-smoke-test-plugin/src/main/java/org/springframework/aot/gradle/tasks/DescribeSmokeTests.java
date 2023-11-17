@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2022-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,10 @@ import org.gradle.api.Task;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.provider.MapProperty;
+import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 
@@ -49,6 +51,7 @@ public abstract class DescribeSmokeTests extends DefaultTask {
 		getSmokeTestsDescription().put("path", getProject().provider(getProject()::getPath));
 		getSmokeTestsDescription().put("group", getProject().provider(getProject().getParent()::getName));
 		getSmokeTestsDescription().put("name", getProject().provider(getProject()::getName));
+		getSmokeTestsDescription().put("slackChannel", getProject().provider(() -> getSlackChannel().getOrElse("")));
 	}
 
 	@Input
@@ -56,6 +59,10 @@ public abstract class DescribeSmokeTests extends DefaultTask {
 
 	@OutputDirectory
 	public abstract DirectoryProperty getOutputDirectory();
+
+	@Input
+	@Optional
+	public abstract Property<String> getSlackChannel();
 
 	@InputFiles
 	public FileCollection getAppTests() {
@@ -81,6 +88,7 @@ public abstract class DescribeSmokeTests extends DefaultTask {
 		List<String> lines = getSmokeTestsDescription().get()
 			.entrySet()
 			.stream()
+			.filter((entry) -> !entry.getValue().isBlank())
 			.map((entry) -> entry.getKey() + "=" + entry.getValue())
 			.sorted()
 			.toList();

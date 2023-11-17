@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2022-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,9 @@ public abstract class UpdateConcoursePipeline extends AbstractSmokeTestsTask {
 					writer.println("     - name: " + smokeTest.name());
 					writer.println("       app_test: " + smokeTest.appTests());
 					writer.println("       test: " + smokeTest.tests());
+					if (smokeTest.slackChannel() != null) {
+						writer.println("       slack_channel: '" + smokeTest.slackChannel() + "'");
+					}
 				});
 			});
 		}
