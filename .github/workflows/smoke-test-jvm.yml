@@ -45,3 +45,21 @@ jobs:
           REPO_SPRING_VMWARE_COM_USERNAME: ${{ secrets.COMMERCIAL_ARTIFACTORY_RO_USERNAME }}
           REPO_SPRING_VMWARE_COM_PASSWORD: ${{ secrets.COMMERCIAL_ARTIFACTORY_RO_PASSWORD }}
         run: ./gradlew ${{ inputs.project }}:${{ inputs.task }}
+      - name: Check out send notification action
+        uses: actions/checkout@v4
+        if: ${{ failure() }}
+        with:
+          path: notifications
+          ref: ci
+          sparse-checkout: .github/actions/send-notification
+      - name: Send notification
+        uses: ./ci/.github/actions/send-notification
+        if: ${{ failure() }}
+        env:
+          GROUP_OWNER_SECRET_NAME: ${{ inputs.group_owners_secret_name }}
+          TEST_OWNER_SECRET_NAME: ${{ inputs.test_owners_secret_name }}
+        with:
+          webhook-url: ${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}
+          status: ${{ job.status }}
+          group-owners: ${{ secrets[env.GROUP_OWNER_SECRET_NAME] }}
+          test-owners: ${{ secrets[env.TEST_OWNER_SECRET_NAME] }}
