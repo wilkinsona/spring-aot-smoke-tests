@@ -52,14 +52,17 @@ jobs:
           path: ci
           ref: notifications
           sparse-checkout: .github/actions/send-notification
+      - name: Determine owner ID secret names
+        if: ${{ failure() }}
+        run: |
+          projectName=$(echo ${{ inputs.project }} | tr '[:lower:]:-' '[:upper:]__')
+          groupName=$(echo BOOT_BOOT_TCF | awk '{print substr($1, 0, index($1, "_") - 1)}')
+          echo SECRET_NAME_OWNER_IDS_PROJECT=OWNER_IDS_${projectName} >> $GITHUB_ENV
+          echo SECRET_NAME_OWNER_IDS_GROUP=OWNER_IDS_${groupName} >> $GITHUB_ENV
       - name: Send notification
         uses: ./ci/.github/actions/send-notification
         if: ${{ failure() }}
-        env:
-          GROUP_OWNER_SECRET_NAME: ${{ inputs.group_owners_secret_name }}
-          TEST_OWNER_SECRET_NAME: ${{ inputs.test_owners_secret_name }}
         with:
           webhook-url: ${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}
-          status: ${{ job.status }}
-          group-owners: ${{ secrets[env.GROUP_OWNER_SECRET_NAME] }}
-          test-owners: ${{ secrets[env.TEST_OWNER_SECRET_NAME] }}
+          task: ${{ inputs.project }}:${{ inputs.task }}
+          owner-ids: ${{ secrets[env.SECRET_NAME_OWNER_IDS_PROJECT] || secrets[env.SECRET_NAME_OWNER_IDS_GROUP]}}

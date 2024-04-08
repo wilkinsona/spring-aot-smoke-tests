@@ -4,19 +4,18 @@ inputs:
   webhook-url:
     description: 'Google Chat Webhook URL'
     required: true
-  test-owners:
-    description: 'List of test owners to tag when the build fails'
+  owner-ids:
+    description: 'IDs of the owners to notify'
     required: true
-  group-owners:
-    description: 'List of group owners to tag when the build fails. Fallback when test owners is empty'
+  task:
+    description: 'The task that has failed'
+    required: true
+  branch:
+    description: 'The branch on which the failure occured'
     required: true
 runs:
   using: composite
   steps:
     - shell: bash
       run: |
-        echo "RUN_URL=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> "$GITHUB_ENV"
-        echo "USERS_TO_TAG=$([ ! -z "${{ inputs.test-owners }}" ] && echo "${{ inputs.test-owners }}" || echo "${{ inputs.group-owners }}")" >> "$GITHUB_ENV"
-    - shell: bash
-      run: |
-        curl -s -o /dev/null -X POST '${{ inputs.webhook-url }}' -H 'Content-Type: application/json' -d '{ text: "${{ env.USERS_TO_TAG }} *<${{ env.RUN_URL }}> failed* "}' || true
+        curl -s -o /dev/null -X POST '${{ inputs.webhook-url }}' -H 'Content-Type: application/json' -d "{ text: \"${{ inputs.owner-ids }} ${{ inputs.task }} <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|failed> on ${{ github.ref_name }} \"}" || true
